@@ -1,0 +1,9 @@
+{
+  "name": "Super Liga X1",
+  "short_name": "Liga X1",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0b132b",
+  "theme_color": "#2563eb",
+  "orientation": "portrait"
+}

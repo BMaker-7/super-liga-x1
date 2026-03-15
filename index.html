@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Super Liga X1</title>
+
+<style>
+:root{
+  --bg:#0b132b;
+  --card:#0f172a;
+  --card2:#111827;
+  --border:#1f2937;
+  --accent:#2563eb;
+  --accent2:#1d4ed8;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --gold:#d4af37;
+  --silver:#c0c0c0;
+  --bronze:#cd7f32;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:system-ui, Arial, sans-serif;
+  background:linear-gradient(180deg,#020617,#0b132b 40%,#0b132b);
+  color:var(--text);
+}
+
+header{
+  padding:16px;
+  text-align:center;
+  border-bottom:1px solid var(--border);
+  background:#020617;
+}
+
+h1{margin:0}
+small{color:var(--muted)}
+
+.menu{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+
+button{
+  border:none;
+  border-radius:8px;
+  padding:8px 12px;
+  font-weight:bold;
+  background:var(--accent);
+  color:white;
+  cursor:pointer;
+}
+
+button:hover{background:var(--accent2)}
+
+.section{
+  display:none;
+  padding:15px;
+  max-width:900px;
+  margin:auto;
+}
+
+.active{display:block}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:15px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+
+th,td{
+  padding:6px;
+  border-bottom:1px solid var(--border);
+  text-align:center;
+}
+
+.rank1{background:rgba(212,175,55,.15)}
+.rank2{background:rgba(192,192,192,.15)}
+.rank3{background:rgba(205,127,50,.15)}
+
+.match{
+  margin:6px 0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:6px;
+}
+
+input[type=number]{
+  width:42px;
+  text-align:center;
+}
+
+textarea{
+  width:100%;
+  height:160px;
+  border:none;
+  border-radius:8px;
+  padding:8px;
+  background:#020617;
+  color:white;
+}
+
+.statBox{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.statItem{
+  background:var(--card2);
+  padding:8px;
+  border-radius:8px;
+}
+
+.profile{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.profileCard{
+  background:#020617;
+  padding:20px;
+  border-radius:10px;
+  width:280px;
+}
+
+.profileCard h3{margin-top:0}
+
+.closeBtn{
+  background:#ef4444;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🏆 Super Liga X1</h1>
+<small>Temporada 1</small>
+
+<div class="menu">
+<button onclick="show('tabela')">Classificação</button>
+<button onclick="show('rodadas')">Rodadas</button>
+<button onclick="show('artilharia')">Artilharia</button>
+<button onclick="show('stats')">Estatísticas</button>
+<button onclick="show('regras')">Regras</button>
+</div>
+</header>
+
+<!-- CLASSIFICAÇÃO -->
+
+<div id="tabela" class="section active">
+
+<div class="card">
+
+<input id="playerName" placeholder="Jogador">
+<button onclick="addPlayer()">Adicionar</button>
+<button onclick="generateMatches()">Gerar Rodadas</button>
+<button onclick="backup()">Backup</button>
+<button onclick="resetLeague()">Reset</button>
+
+<table id="table">
+<thead>
+<tr>
+<th>#</th>
+<th>Jogador</th>
+<th>P</th>
+<th>J</th>
+<th>V</th>
+<th>E</th>
+<th>D</th>
+<th>GP</th>
+<th>GC</th>
+<th>SG</th>
+<th>AP%</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+</div>
+
+</div>
+
+<!-- RODADAS -->
+
+<div id="rodadas" class="section">
+
+<div class="card">
+<h2>Rodadas</h2>
+<div id="matches"></div>
+</div>
+
+</div>
+
+<!-- ARTILHARIA -->
+
+<div id="artilharia" class="section">
+
+<div class="card">
+
+<h2>⚽ Artilharia</h2>
+
+<div id="topScorer"></div>
+
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Jogador</th>
+<th>Gols</th>
+</tr>
+</thead>
+
+<tbody id="goalsTable"></tbody>
+</table>
+
+</div>
+
+</div>
+
+<!-- ESTATISTICAS -->
+
+<div id="stats" class="section">
+
+<div class="card">
+
+<h2>📊 Estatísticas da Liga</h2>
+
+<div class="statBox" id="leagueStats"></div>
+
+</div>
+
+</div>
+
+<!-- REGRAS -->
+
+<div id="regras" class="section">
+
+<div class="card">
+
+<textarea id="rules"></textarea>
+
+</div>
+
+</div>
+
+<!-- PERFIL -->
+
+<div class="profile" id="profile">
+
+<div class="profileCard" id="profileContent"></div>
+
+</div>
+
+<script>
+
+let players=[]
+let matches=[]
+
+load()
+
+function show(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"))
+document.getElementById(id).classList.add("active")
+}
+
+function addPlayer(){
+let name=document.getElementById("playerName").value.trim()
+if(!name)return
+players.push(name)
+document.getElementById("playerName").value=""
+save()
+render()
+}
+
+function editPlayer(i){
+let n=prompt("Novo nome:",players[i])
+if(n){players[i]=n;save();render()}
+}
+
+function removePlayer(i){
+if(!confirm("Remover jogador?"))return
+players.splice(i,1)
+save()
+render()
+}
+
+function resetLeague(){
+if(!confirm("Resetar liga?"))return
+players=[]
+matches=[]
+localStorage.clear()
+render()
+}
+
+function generateMatches(){
+
+matches=[]
+
+let temp=[...players]
+
+if(temp.length%2!==0)temp.push("BYE")
+
+let rounds=temp.length-1
+let half=temp.length/2
+
+for(let r=0;r<rounds;r++){
+
+let round=[]
+
+for(let i=0;i<half;i++){
+
+let p1=temp[i]
+let p2=temp[temp.length-1-i]
+
+if(p1!="BYE"&&p2!="BYE")
+round.push({p1,p2,g1:null,g2:null})
+
+}
+
+temp.splice(1,0,temp.pop())
+
+matches.push(round)
+
+}
+
+save()
+render()
+
+}
+
+function setScore(r,i,p,val){
+
+if(p==1)matches[r][i].g1=parseInt(val)
+else matches[r][i].g2=parseInt(val)
+
+save()
+render()
+
+}
+
+function render(){
+
+renderMatches()
+updateStats()
+
+}
+
+function renderMatches(){
+
+let div=document.getElementById("matches")
+div.innerHTML=""
+
+let currentRound=-1
+
+matches.forEach((round,r)=>{
+
+if(currentRound==-1){
+let unfinished=round.some(m=>m.g1==null||m.g2==null)
+if(unfinished)currentRound=r
+}
+
+})
+
+matches.forEach((round,r)=>{
+
+let title="Rodada "+(r+1)
+
+if(r==currentRound)title="🔥 "+title
+
+div.innerHTML+="<h3>"+title+"</h3>"
+
+round.forEach((m,i)=>{
+
+div.innerHTML+=`
+<div class="match">
+
+${m.p1}
+
+<input type="number" value="${m.g1??""}"
+onchange="setScore(${r},${i},1,this.value)">
+
+x
+
+<input type="number" value="${m.g2??""}"
+onchange="setScore(${r},${i},2,this.value)">
+
+${m.p2}
+
+</div>`
+
+})
+
+})
+
+}
+
+function updateStats(){
+
+let table={}
+let goals={}
+let bestAttack={name:"-",v:0}
+let bestDefense={name:"-",v:9999}
+let biggestWin=0
+
+players.forEach(p=>{
+table[p]={p:0,j:0,v:0,e:0,d:0,gp:0,gc:0}
+goals[p]=0
+})
+
+matches.forEach(round=>{
+
+round.forEach(m=>{
+
+if(m.g1==null||m.g2==null)return
+
+let diff=Math.abs(m.g1-m.g2)
+if(diff>biggestWin)biggestWin=diff
+
+table[m.p1].j++
+table[m.p2].j++
+
+table[m.p1].gp+=m.g1
+table[m.p1].gc+=m.g2
+
+table[m.p2].gp+=m.g2
+table[m.p2].gc+=m.g1
+
+goals[m.p1]+=m.g1
+goals[m.p2]+=m.g2
+
+if(m.g1>m.g2){
+table[m.p1].v++
+table[m.p1].p+=3
+table[m.p2].d++
+}
+else if(m.g2>m.g1){
+table[m.p2].v++
+table[m.p2].p+=3
+table[m.p1].d++
+}
+else{
+table[m.p1].e++
+table[m.p2].e++
+table[m.p1].p++
+table[m.p2].p++
+}
+
+})
+
+})
+
+let sorted=Object.entries(table)
+.sort((a,b)=>{
+let p=b[1].p-a[1].p
+if(p!=0)return p
+let sg=(b[1].gp-b[1].gc)-(a[1].gp-a[1].gc)
+if(sg!=0)return sg
+return b[1].gp-a[1].gp
+})
+
+renderTable(sorted,table,goals)
+
+Object.entries(table).forEach(p=>{
+
+if(p[1].gp>bestAttack.v){
+bestAttack={name:p[0],v:p[1].gp}
+}
+
+if(p[1].gc<bestDefense.v){
+bestDefense={name:p[0],v:p[1].gc}
+}
+
+})
+
+document.getElementById("leagueStats").innerHTML=`
+
+<div class="statItem">⚽ Melhor ataque<br>${bestAttack.name} (${bestAttack.v})</div>
+<div class="statItem">🧱 Melhor defesa<br>${bestDefense.name} (${bestDefense.v})</div>
+<div class="statItem">💥 Maior goleada<br>${biggestWin} gols</div>
+
+`
+
+renderGoals(goals)
+
+}
+
+function medal(i){
+if(i==0)return"🥇"
+if(i==1)return"🥈"
+if(i==2)return"🥉"
+return""
+}
+
+function renderTable(sorted,table,goals){
+
+let tbody=document.querySelector("#table tbody")
+tbody.innerHTML=""
+
+sorted.forEach((p,i)=>{
+
+let sg=p[1].gp-p[1].gc
+let ap=p[1].j?((p[1].p/(p[1].j*3))*100).toFixed(0):0
+let cls=i<3?`rank${i+1}`:""
+
+tbody.innerHTML+=`
+
+<tr class="${cls}">
+
+<td>${i+1}</td>
+
+<td onclick="openProfile('${p[0]}')" style="cursor:pointer">
+${medal(i)} ${p[0]}
+</td>
+
+<td>${p[1].p}</td>
+<td>${p[1].j}</td>
+<td>${p[1].v}</td>
+<td>${p[1].e}</td>
+<td>${p[1].d}</td>
+<td>${p[1].gp}</td>
+<td>${p[1].gc}</td>
+<td>${sg}</td>
+<td>${ap}%</td>
+
+<td>
+
+<button onclick="editPlayer(${players.indexOf(p[0])})">✏</button>
+<button onclick="removePlayer(${players.indexOf(p[0])})">🗑</button>
+
+</td>
+
+</tr>
+
+`
+
+})
+
+}
+
+function renderGoals(goals){
+
+let tbody=document.getElementById("goalsTable")
+tbody.innerHTML=""
+
+let sorted=Object.entries(goals).sort((a,b)=>b[1]-a[1])
+
+sorted.forEach((g,i)=>{
+
+tbody.innerHTML+=`
+<tr>
+<td>${i+1}</td>
+<td>${medal(i)} ${g[0]}</td>
+<td>${g[1]}</td>
+</tr>
+`
+
+})
+
+if(sorted.length>0)
+document.getElementById("topScorer").innerHTML="👑 Artilheiro: "+sorted[0][0]+" - "+sorted[0][1]+" gols"
+
+}
+
+function openProfile(name){
+
+let stats=calcPlayerStats(name)
+
+document.getElementById("profileContent").innerHTML=`
+
+<h3>👤 ${name}</h3>
+
+Jogos: ${stats.j}<br>
+Vitórias: ${stats.v}<br>
+Empates: ${stats.e}<br>
+Derrotas: ${stats.d}<br><br>
+
+Gols: ${stats.gp}<br>
+Saldo: ${stats.sg}<br>
+Aproveitamento: ${stats.ap}%<br>
+
+<button class="closeBtn" onclick="closeProfile()">Fechar</button>
+
+`
+
+document.getElementById("profile").style.display="flex"
+
+}
+
+function closeProfile(){
+document.getElementById("profile").style.display="none"
+}
+
+function calcPlayerStats(name){
+
+let s={j:0,v:0,e:0,d:0,gp:0,gc:0}
+
+matches.forEach(r=>{
+r.forEach(m=>{
+
+if(m.g1==null||m.g2==null)return
+
+if(m.p1==name){
+
+s.j++
+s.gp+=m.g1
+s.gc+=m.g2
+
+if(m.g1>m.g2)s.v++
+else if(m.g1<m.g2)s.d++
+else s.e++
+
+}
+
+if(m.p2==name){
+
+s.j++
+s.gp+=m.g2
+s.gc+=m.g1
+
+if(m.g2>m.g1)s.v++
+else if(m.g2<m.g1)s.d++
+else s.e++
+
+}
+
+})
+})
+
+s.sg=s.gp-s.gc
+s.ap=s.j?((s.v*3+s.e)/(s.j*3)*100).toFixed(0):0
+
+return s
+
+}
+
+function save(){
+localStorage.setItem("players",JSON.stringify(players))
+localStorage.setItem("matches",JSON.stringify(matches))
+localStorage.setItem("rules",document.getElementById("rules").value)
+}
+
+function load(){
+
+let p=localStorage.getItem("players")
+let m=localStorage.getItem("matches")
+let r=localStorage.getItem("rules")
+
+if(p)players=JSON.parse(p)
+if(m)matches=JSON.parse(m)
+
+setTimeout(()=>{
+if(r)document.getElementById("rules").value=r
+render()
+},100)
+
+}
+
+document.addEventListener("input",save)
+
+function backup(){
+
+let data={players,matches}
+
+let blob=new Blob([JSON.stringify(data)],{type:"application/json"})
+
+let a=document.createElement("a")
+a.href=URL.createObjectURL(blob)
+a.download="super_liga_x1_backup.json"
+a.click()
+
+}
+
+</script>
+
+</body>
+</html>
